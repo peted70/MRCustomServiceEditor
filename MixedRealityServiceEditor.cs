@@ -28,14 +28,20 @@ public class {0} : BaseExtensionService, I{0}
 }}";
 
     private const string ProfileCode =
-@"using Microsoft.MixedReality.Toolkit;
-using UnityEngine;
 
-[MixedRealityServiceProfile(typeof(I{0}))]
-public class {0}Profile : BaseMixedRealityProfile
-{{
-    public int NumberOfThings;
-}}";
+    @"using Microsoft.MixedReality.Toolkit;
+    using UnityEngine;
+
+    [MixedRealityServiceProfile(typeof(I{0}))]
+    public class {0}Profile : BaseMixedRealityProfile
+    {{
+        void OnEnable()
+        {{
+            name = $""{{0}}Profile"";
+        }}
+        [SerializeField]
+        public int NumberOfThings;
+    }}";
 
     [MenuItem("Mixed Reality Toolkit/Custom Service")]
     public static void ShowWindow()
@@ -47,6 +53,7 @@ public class {0}Profile : BaseMixedRealityProfile
     {
         // The actual window code goes here - read the service name
         GUILayout.Label(new GUIContent("Create a Custom Mixed Reality Extension Service", "custom service help"), EditorStyles.boldLabel);
+        GUILayout.Space(10);
         serviceName = EditorGUILayout.TextField("Service Name", serviceName);
 
         var implementationFilename = $"{serviceName}.cs";
@@ -60,10 +67,16 @@ public class {0}Profile : BaseMixedRealityProfile
         EditorStyles.label.wordWrap = true;
 
         GUILayout.Label($"Pressing 'Create' will cause the following files to be created in the folder {folderName} :");
+        GUILayout.Space(10);
         GUILayout.Label($"{implementationFilename}");
         GUILayout.Label($"{interfaceName}");
         GUILayout.Label($"{profileClassname}");
         GUILayout.Label($"{assetFilename}");
+        GUILayout.Space(10);
+
+        GUILayout.Label($"Pressing 'Create' will cause the following files to be created in the folder {folderName} :");
+        GUILayout.Label($"* Now manually assign the {profileClassname} script in the {assetFilename} object");
+        GUILayout.Space(10);
 
         if (GUILayout.Button("Create"))
         {
@@ -83,10 +96,16 @@ public class {0}Profile : BaseMixedRealityProfile
             var runtimeType = assembly.GetType(serviceName + "Profile");
 
             var so = CreateInstance(runtimeType);
-            AssetDatabase.CreateAsset(so, "Assets" + Path.DirectorySeparatorChar +
-                serviceName + "Extensions" + Path.DirectorySeparatorChar + assetFilename);
+            EditorUtility.SetDirty(so);
+            var assetFilepath = "Assets" + Path.DirectorySeparatorChar +
+                serviceName + "Extensions" + Path.DirectorySeparatorChar + assetFilename;
+            AssetDatabase.CreateAsset(so, assetFilepath);
+            AssetDatabase.ImportAsset(assetFilepath);
+            AssetDatabase.LoadAssetAtPath(assetFilepath, runtimeType);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
+            EditorUtility.FocusProjectWindow();
+            Selection.activeObject = so;
         }
     }
 
