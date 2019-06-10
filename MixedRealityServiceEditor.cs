@@ -8,6 +8,8 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 
+#if UNITY_EDITOR
+
 public class MixedRealityServiceEditor : EditorWindow
 {
     string serviceName = "DefaultService";
@@ -156,3 +158,4 @@ public class {0} : BaseExtensionService, I{0}
         return replacedCode;
     }
 }
+#endif
